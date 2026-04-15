@@ -1,12 +1,24 @@
-add_executable(vix_fs_test
-  fs_test.cpp
-)
+add_executable(vix_fs_exists_test exists_test.cpp)
+target_compile_features(vix_fs_exists_test PRIVATE cxx_std_20)
+target_link_libraries(vix_fs_exists_test PRIVATE vix::fs)
+add_test(NAME vix_fs_exists_test COMMAND vix_fs_exists_test)
 
-target_compile_features(vix_fs_test PRIVATE cxx_std_20)
+add_executable(vix_fs_list_directory_test list_directory_test.cpp)
+target_compile_features(vix_fs_list_directory_test PRIVATE cxx_std_20)
+target_link_libraries(vix_fs_list_directory_test PRIVATE vix::fs)
+add_test(NAME vix_fs_list_directory_test COMMAND vix_fs_list_directory_test)
 
-target_link_libraries(vix_fs_test
-  PRIVATE
-    vix::fs
-)
+add_executable(vix_fs_read_file_test read_file_test.cpp)
+target_compile_features(vix_fs_read_file_test PRIVATE cxx_std_20)
+target_link_libraries(vix_fs_read_file_test PRIVATE vix::fs)
+add_test(NAME vix_fs_read_file_test COMMAND vix_fs_read_file_test)
 
-add_test(NAME vix_fs_test COMMAND vix_fs_test)
+add_executable(vix_fs_remove_test remove_test.cpp)
+target_compile_features(vix_fs_remove_test PRIVATE cxx_std_20)
+target_link_libraries(vix_fs_remove_test PRIVATE vix::fs)
+add_test(NAME vix_fs_remove_test COMMAND vix_fs_remove_test)
+
+add_executable(vix_fs_write_file_test write_file_test.cpp)
+target_compile_features(vix_fs_write_file_test PRIVATE cxx_std_20)
+target_link_libraries(vix_fs_write_file_test PRIVATE vix::fs)
+add_test(NAME vix_fs_write_file_test COMMAND vix_fs_write_file_test)

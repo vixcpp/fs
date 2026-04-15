@@ -1,0 +1,43 @@
+/**
+ *
+ *  @file Exists.hpp
+ *  @author Gaspard Kirira
+ *
+ *  Copyright 2025, Gaspard Kirira.
+ *  All rights reserved.
+ *  https://github.com/vixcpp/vix
+ *
+ *  Use of this source code is governed by a MIT license
+ *  that can be found in the License file.
+ *
+ *  Vix.cpp
+ */
+#ifndef VIX_FS_EXISTS_HPP
+#define VIX_FS_EXISTS_HPP
+
+#include <string_view>
+
+#include <vix/fs/FsResult.hpp>
+
+namespace vix::fs
+{
+
+  /**
+   * @brief Return whether a filesystem path exists.
+   *
+   * This function checks the real filesystem.
+   *
+   * Example:
+   * @code
+   * auto found = vix::fs::exists("data/config.json");
+   * if (found && found.value())
+   * {
+   *   // path exists
+   * }
+   * @endcode
+   */
+  [[nodiscard]] FsBoolResult exists(std::string_view path);
+
+} // namespace vix::fs
+
+#endif // VIX_FS_EXISTS_HPP
