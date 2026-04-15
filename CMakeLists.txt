@@ -73,16 +73,24 @@ else()
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/../error/CMakeLists.txt")
       message(STATUS "[fs] Adding error from umbrella: ../error")
       add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../error" "error")
-    elseif (VIX_FS_FETCH_ERROR)
-      include(FetchContent)
-      message(STATUS "[fs] Fetching vix::error via FetchContent")
-      FetchContent_Declare(vix_error
-        GIT_REPOSITORY https://github.com/vixcpp/error.git
-        GIT_TAG        v0.1.0
-      )
-      FetchContent_MakeAvailable(vix_error)
     else()
-      message(FATAL_ERROR "vix::error not found. Enable VIX_FS_FETCH_ERROR=ON or provide the target before fs.")
+      find_package(vix_error CONFIG QUIET)
+    endif()
+
+    if (NOT TARGET vix::error)
+      if (VIX_FS_FETCH_ERROR)
+        include(FetchContent)
+        message(STATUS "[fs] Fetching vix::error via FetchContent")
+        FetchContent_Declare(vix_error
+          GIT_REPOSITORY https://github.com/vixcpp/error.git
+          GIT_TAG        v0.1.0
+        )
+        FetchContent_MakeAvailable(vix_error)
+      else()
+        message(FATAL_ERROR
+          "vix::error not found. Enable VIX_FS_FETCH_ERROR=ON, install vix_error, or provide the target before fs."
+        )
+      endif()
     endif()
   endif()
 
@@ -90,16 +98,24 @@ else()
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/../path/CMakeLists.txt")
       message(STATUS "[fs] Adding path from umbrella: ../path")
       add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../path" "path")
-    elseif (VIX_FS_FETCH_PATH)
-      include(FetchContent)
-      message(STATUS "[fs] Fetching vix::path via FetchContent")
-      FetchContent_Declare(vix_path
-        GIT_REPOSITORY https://github.com/vixcpp/path.git
-        GIT_TAG        v0.1.0
-      )
-      FetchContent_MakeAvailable(vix_path)
     else()
-      message(FATAL_ERROR "vix::path not found. Enable VIX_FS_FETCH_PATH=ON or provide the target before fs.")
+      find_package(vix_path CONFIG QUIET)
+    endif()
+
+    if (NOT TARGET vix::path)
+      if (VIX_FS_FETCH_PATH)
+        include(FetchContent)
+        message(STATUS "[fs] Fetching vix::path via FetchContent")
+        FetchContent_Declare(vix_path
+          GIT_REPOSITORY https://github.com/vixcpp/path.git
+          GIT_TAG        v0.1.0
+        )
+        FetchContent_MakeAvailable(vix_path)
+      else()
+        message(FATAL_ERROR
+          "vix::path not found. Enable VIX_FS_FETCH_PATH=ON, install vix_path, or provide the target before fs."
+        )
+      endif()
     endif()
   endif()
 endif()
