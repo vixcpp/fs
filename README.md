@@ -10,8 +10,6 @@ It is designed to be:
 - safe with structured error handling
 - familiar for developers coming from Node.js, Deno, or Bun
 
----
-
 ## Philosophy
 
 Filesystem APIs in Vix follow strict principles:
@@ -24,8 +22,6 @@ Filesystem APIs in Vix follow strict principles:
 
 The goal is to give C++ a **modern developer experience**.
 
----
-
 ## Install
 
 Using Vix:
@@ -33,8 +29,6 @@ Using Vix:
 ```bash
 vix add @vix/fs
 ```
-
----
 
 ## Quick Start
 
@@ -56,8 +50,6 @@ int main()
 }
 ```
 
----
-
 ## Core Features
 
 ### File operations
@@ -70,8 +62,6 @@ auto text = vix::fs::read_text("file.txt");
 auto bytes = vix::fs::read_file("file.bin");
 ```
 
----
-
 ### Directory operations
 
 ```cpp
@@ -80,8 +70,6 @@ vix::fs::create_directories("data/cache/images");
 
 vix::fs::ensure_directory("logs");
 ```
-
----
 
 ### File system queries
 
@@ -93,16 +81,12 @@ vix::fs::is_directory("data");
 auto size = vix::fs::size("file.txt");
 ```
 
----
-
 ### Path & environment
 
 ```cpp
 auto cwd = vix::fs::current_path();
 auto tmp = vix::fs::temp_directory();
 ```
-
----
 
 ### Copy / Move / Remove
 
@@ -114,8 +98,6 @@ vix::fs::rename("c.txt", "final.txt");
 vix::fs::remove("file.txt");
 vix::fs::remove_all("build/");
 ```
-
----
 
 ### Directory listing
 
@@ -130,8 +112,6 @@ if (result)
   }
 }
 ```
-
----
 
 ## Error Handling
 
@@ -149,8 +129,6 @@ if (!result)
 std::cout << result.value();
 ```
 
----
-
 ## Types
 
 ### Bytes
@@ -160,8 +138,6 @@ using Bytes = std::vector<std::uint8_t>;
 ```
 
 Used for binary operations.
-
----
 
 ### FsEntry
 
@@ -178,8 +154,6 @@ struct FsEntry
 };
 ```
 
----
-
 ## Examples
 
 See the `examples/` directory:
@@ -191,8 +165,6 @@ See the `examples/` directory:
 - copy_move.cpp
 - advanced.cpp
 
----
-
 ## Design Notes
 
 - `path` module handles lexical operations
@@ -200,8 +172,6 @@ See the `examples/` directory:
 - errors are structured and explicit
 - no exceptions required
 - consistent API across all platforms
-
----
 
 ## Why Vix FS?
 
@@ -217,8 +187,6 @@ Vix FS provides:
 - predictable behavior
 - clean error handling
 - modern developer experience
-
----
 
 ## License
 
