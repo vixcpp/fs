@@ -26,7 +26,8 @@
 #   - vix::path
 #
 # Installation/Export:
-#   Installs into the umbrella export-set `VixTargets`.
+#   - Umbrella build exports into: VixTargets
+#   - Standalone build exports into: vix_fsTargets
 # ====================================================================
 
 cmake_minimum_required(VERSION 3.20)
@@ -35,10 +36,21 @@ project(vix_fs VERSION 0.1.0 LANGUAGES CXX)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
+# --------------------------------------------------------------------
 # Global settings
+# --------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# --------------------------------------------------------------------
+# Export set selection
+# --------------------------------------------------------------------
+if (DEFINED VIX_UMBRELLA_BUILD AND VIX_UMBRELLA_BUILD)
+  set(VIX_FS_EXPORT_SET VixTargets)
+else()
+  set(VIX_FS_EXPORT_SET vix_fsTargets)
+endif()
 
 # --------------------------------------------------------------------
 # Umbrella build policy:
@@ -51,12 +63,16 @@ if (DEFINED VIX_UMBRELLA_BUILD AND VIX_UMBRELLA_BUILD)
   set(VIX_FS_FETCH_PATH  OFF CACHE BOOL "Auto-fetch vix::path if missing" FORCE)
 endif()
 
+# --------------------------------------------------------------------
 # Sources discovery
+# --------------------------------------------------------------------
 file(GLOB_RECURSE FS_SOURCES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
+# --------------------------------------------------------------------
 # Dependencies
+# --------------------------------------------------------------------
 option(VIX_FS_FETCH_ERROR "Auto-fetch vix::error if missing" ON)
 option(VIX_FS_FETCH_PATH  "Auto-fetch vix::path if missing" ON)
 
@@ -71,7 +87,7 @@ if (DEFINED VIX_UMBRELLA_BUILD AND VIX_UMBRELLA_BUILD)
 else()
   if (NOT TARGET vix::error)
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/../error/CMakeLists.txt")
-      message(STATUS "[fs] Adding error from umbrella: ../error")
+      message(STATUS "[fs] Adding error from sibling: ../error")
       add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../error" "error")
     else()
       find_package(vix_error CONFIG QUIET)
@@ -96,7 +112,7 @@ else()
 
   if (NOT TARGET vix::path)
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/../path/CMakeLists.txt")
-      message(STATUS "[fs] Adding path from umbrella: ../path")
+      message(STATUS "[fs] Adding path from sibling: ../path")
       add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../path" "path")
     else()
       find_package(vix_path CONFIG QUIET)
@@ -123,7 +139,9 @@ endif()
 set(VIX_ERROR_TARGET vix::error)
 set(VIX_PATH_TARGET  vix::path)
 
-# STATIC
+# --------------------------------------------------------------------
+# Library target
+# --------------------------------------------------------------------
 if (FS_SOURCES)
   message(STATUS "[fs] Building STATIC library with detected sources.")
 
@@ -144,12 +162,13 @@ if (FS_SOURCES)
       ${VIX_PATH_TARGET}
   )
 
+  # Build-only helpers must not leak into exported interfaces.
   if (TARGET vix_warnings)
-    target_link_libraries(vix_fs PUBLIC vix_warnings)
+    target_link_libraries(vix_fs PRIVATE vix_warnings)
   endif()
 
   if (VIX_ENABLE_SANITIZERS AND TARGET vix_sanitizers)
-    target_link_libraries(vix_fs PUBLIC vix_sanitizers)
+    target_link_libraries(vix_fs PRIVATE vix_sanitizers)
   endif()
 
   set_target_properties(vix_fs PROPERTIES
@@ -160,14 +179,13 @@ if (FS_SOURCES)
   )
 
   install(TARGETS vix_fs
-    EXPORT VixTargets
+    EXPORT ${VIX_FS_EXPORT_SET}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   )
 
-# HEADER-ONLY
 else()
   message(STATUS "[fs] Building HEADER-ONLY library (no sources).")
 
@@ -186,48 +204,59 @@ else()
     ${VIX_PATH_TARGET}
   )
 
-  if (VIX_ENABLE_SANITIZERS AND TARGET vix_sanitizers)
-    target_link_libraries(vix_fs INTERFACE vix_sanitizers)
-  endif()
-
   install(TARGETS vix_fs
-    EXPORT VixTargets
+    EXPORT ${VIX_FS_EXPORT_SET}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   )
 endif()
 
+# --------------------------------------------------------------------
 # Install headers
+# --------------------------------------------------------------------
 if (NOT (DEFINED VIX_UMBRELLA_BUILD AND VIX_UMBRELLA_BUILD))
-  install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-          FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+  install(DIRECTORY include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING
+      PATTERN "*.hpp"
+      PATTERN "*.h"
+  )
 endif()
 
-# Package config
-configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/vix_fsConfig.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/vix_fsConfig.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/vix_fs"
-)
+# --------------------------------------------------------------------
+# Standalone package config/export
+# Only for non-umbrella builds
+# --------------------------------------------------------------------
+if (NOT (DEFINED VIX_UMBRELLA_BUILD AND VIX_UMBRELLA_BUILD))
 
-write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/vix_fsConfigVersion.cmake"
-  VERSION ${PROJECT_VERSION}
-  COMPATIBILITY SameMajorVersion
-)
+  configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/vix_fsConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/vix_fsConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/vix_fs"
+  )
 
-install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/vix_fsConfig.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/vix_fsConfigVersion.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/vix_fs"
-)
+  write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/vix_fsConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+  )
 
-install(EXPORT VixTargets
-  FILE VixTargets.cmake
-  NAMESPACE vix::
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/vix_fs"
-)
+  install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/vix_fsConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/vix_fsConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/vix_fs"
+  )
 
+  install(EXPORT vix_fsTargets
+    FILE vix_fsTargets.cmake
+    NAMESPACE vix::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/vix_fs"
+  )
+
+endif()
+
+# --------------------------------------------------------------------
 # Tests
+# --------------------------------------------------------------------
 option(VIX_FS_BUILD_TESTS "Build fs module tests" OFF)
 
 if (VIX_FS_BUILD_TESTS)
@@ -236,7 +265,18 @@ if (VIX_FS_BUILD_TESTS)
   add_subdirectory(test)
 endif()
 
+# --------------------------------------------------------------------
+# Examples
+# --------------------------------------------------------------------
+option(VIX_FS_BUILD_EXAMPLES "Build fs module examples" OFF)
+
+if (VIX_FS_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+# --------------------------------------------------------------------
 # Summary
+# --------------------------------------------------------------------
 message(STATUS "------------------------------------------------------")
 message(STATUS "vix::fs configured (${PROJECT_VERSION})")
 if (FS_SOURCES)
@@ -244,6 +284,7 @@ if (FS_SOURCES)
 else()
   message(STATUS "Mode: HEADER-ONLY / no sources")
 endif()
+message(STATUS "Export set: ${VIX_FS_EXPORT_SET}")
 message(STATUS "Error target: ${VIX_ERROR_TARGET}")
 message(STATUS "Path target:  ${VIX_PATH_TARGET}")
 message(STATUS "Include dir: ${CMAKE_CURRENT_SOURCE_DIR}/include (for <vix/fs/...>)")
