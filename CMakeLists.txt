@@ -163,12 +163,22 @@ if (FS_SOURCES)
   )
 
   # Build-only helpers must not leak into exported interfaces.
-  if (TARGET vix_warnings)
-    target_link_libraries(vix_fs PRIVATE vix_warnings)
+  if (NOT MSVC)
+    target_compile_options(vix_fs PRIVATE
+      -Wall
+      -Wextra
+      -Wpedantic
+    )
   endif()
 
-  if (VIX_ENABLE_SANITIZERS AND TARGET vix_sanitizers)
-    target_link_libraries(vix_fs PRIVATE vix_sanitizers)
+  if (VIX_ENABLE_SANITIZERS AND NOT MSVC)
+    target_compile_options(vix_fs PRIVATE
+      -fno-omit-frame-pointer
+      -fsanitize=address,undefined
+    )
+    target_link_options(vix_fs PRIVATE
+      -fsanitize=address,undefined
+    )
   endif()
 
   set_target_properties(vix_fs PROPERTIES
