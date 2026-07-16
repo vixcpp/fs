@@ -1,0 +1,55 @@
+{
+  "namespace": "vix",
+  "name": "fs",
+  "displayName": "Vix FS",
+  "version": "0.2.2",
+  "type": "library",
+  "license": "MIT",
+  "description": "Cross-platform filesystem utilities with explicit Vix error handling.",
+  "repository": "https://github.com/vixcpp/fs.git",
+  "documentation": "https://github.com/vixcpp/fs#readme",
+  "include": "include",
+  "standard": "c++20",
+  "keywords": [
+    "vix",
+    "cpp",
+    "filesystem",
+    "files",
+    "portable"
+  ],
+  "authors": [
+    {
+      "name": "Gaspard Kirira"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Gaspard Kirira"
+    }
+  ],
+  "exports": {
+    "modules": [
+      "vix::fs"
+    ],
+    "namespaces": [
+      "vix::fs"
+    ]
+  },
+  "constraints": {
+    "platforms": [
+      "linux",
+      "macos",
+      "windows"
+    ]
+  },
+  "deps": [
+    {
+      "id": "vix/error",
+      "version": "0.3.1"
+    },
+    {
+      "id": "vix/path",
+      "version": "0.3.1"
+    }
+  ]
+}
